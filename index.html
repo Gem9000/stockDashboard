@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: 0 auto; }
+        h1 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f4f4f4; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Dashboard</h1>
+        <form id="date-form">
+            <label for="date">Enter Date (YYYY-MM-DD):</label>
+            <input type="date" id="date" name="date" required>
+            <button type="submit">Get Data</button>
+        </form>
+        <div id="results"></div>
+    </div>
+    <script>
+        document.getElementById('date-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const date = document.getElementById('date').value;
+            fetch(`/api/data?date=${date}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById('results');
+                    resultsDiv.innerHTML = '';
+                    if (data.error) {
+                        resultsDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                        return;
+                    }
+                    const table = document.createElement('table');
+                    const header = table.insertRow();
+                    header.innerHTML = '<th>Index</th><th>Ticker</th><th>Date</th><th>Open</th><th>Close</th>';
+                    for (const [index, info] of Object.entries(data)) {
+                        const row = table.insertRow();
+                        if (info.error) {
+                            row.innerHTML = `<td>${index}</td><td colspan="4" class="error">${info.error}</td>`;
+                        } else {
+                            row.innerHTML = `<td>${index}</td><td>${info.ticker}</td><td>${info.date}</td><td>${info.open}</td><td>${info.close}</td>`;
+                        }
+                    }
+                    resultsDiv.appendChild(table);
+                });
+        });
+    </script>
+</body>
+</html>
